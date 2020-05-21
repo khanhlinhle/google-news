@@ -1,12 +1,67 @@
 let newsList = [];
 const apiKey = "6d2c1467bedb46a5a41bfd03f84933b0";
 
-const loadNews = async() => {
-    let urlApiKey = `https://newsapi.org/v2/everything?q=movie&sortBy=publishedAt&apiKey=${apiKey}&page=1`
-    let data = await fetch(urlApiKey)
+const loadNews = async(status) => {
+    let urlApiKey = "";
+    if (status == "firstTime" || status == "searchByKeyword") {
+        urlApiKey = `https://newsapi.org/v2/everything?q=${keyword}&sortBy=publishedAt&apiKey=${apiKey}&page=1`
+    } else if (status == "category") {
+        urlApiKey = `https://newsapi.org/v2/top-headlines?q=${keyword}&category=${category}&apiKey=${apiKey}&page=${pageNo}`
+    }
+    console.log(urlApiKey, "bsahjcdhjsbcdhjbc")
+    let data = await fetch(urlApiKey);
     let result = await data.json();
+    console.log(result)
     newsList = result.articles;
+    showSourceList();
     render(newsList);
+    console.log(newsList)
+}
+
+// How to search by keyword.
+
+let keyword = "vietnam";
+
+const searchByKeyword = () => {
+    keyword = document.getElementById("keywordArea").value;
+    loadNews("searchByKeyword");
+}
+
+// How to search by category.
+
+let category = "general";
+
+const searchByCategory = () => {
+    category = document.getElementById("category").value;
+    loadNews("category");
+}
+
+// How to search by sources.
+
+const showSourceList = () => {
+    let sourcenames = newsList.map(item => item.source.name);
+    let sourceObject = {};
+    for (let i = 0; i < sourcenames.length; i++) {
+        let sourcename = sourcenames[i]
+        if (sourceObject[sourcename] == null) {
+            sourceObject[sourcename] = 1;
+        } else {
+            sourceObject[sourcename]++;
+        }
+    }
+    let sourceList = Object.keys(sourceObject);
+    console.log(sourceObject)
+    let html = sourceList.map(item => `<input type="checkbox" value="${item}" onchange="searchBySource(event)" class="search-part"/>${item} : ${sourceObject[item]}`);
+    document.getElementById("sourceArea").innerHTML = html;
+}
+
+let searchBySource = (event) => {
+    if (event.target.checked == true) {
+        let source = event.target.value;
+        let filteredList = newsList.filter(item => item.source.name === source);
+        render(filteredList);
+    }
+
 }
 
 const render = (list) => {
@@ -36,13 +91,13 @@ function publicTime(time) {
     return moment(newTime2, "YYYYMMDD").fromNow()
 }
 
-loadNews();
+loadNews("firstTime");
 
 let pageNo = 2;
 let totalNews = 20;
 
 const loadMoreNews = async() => {
-    let urlApiKey = `https://newsapi.org/v2/everything?q=movie&sortBy=publishedAt&apiKey=${apiKey}&page=${pageNo}`
+    let urlApiKey = `https://newsapi.org/v2/everything?q=${keyword}&sortBy=publishedAt&apiKey=${apiKey}&page=${pageNo}`
     let data = await fetch(urlApiKey)
     let result = await data.json();
     let list = result.articles;

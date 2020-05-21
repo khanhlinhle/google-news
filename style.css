@@ -25,6 +25,10 @@
     border-radius: 5px;
 }
 
+.text-style {
+    color: black !important;
+}
+
 footer {
     left: 0;
     bottom: 0;
